@@ -8,26 +8,14 @@ import {
   View,
 } from 'react-native';
 
-// ======================
-// TIPOS
-// ======================
-
-type Cao = {
-  id: string;
-  nome: string;
-  tutor?: string;
-  endereco?: string;
-};
+import { useCaes, Cao } from '@/hooks/use-caes';
 
 // ======================
 // TELA
 // ======================
 
 export default function CaesScreen() {
-  const [caes, setCaes] = useState<Cao[]>([
-    { id: '1', nome: 'LUNA', tutor: 'Maria', endereco: 'Rua das Flores' },
-    { id: '2', nome: 'JIMMY', tutor: 'Carol', endereco: 'Dois de Dezembro' },
-  ]);
+  const { caes, adicionarCao, atualizarCao } = useCaes();
 
   const [nome, setNome] = useState('');
   const [tutor, setTutor] = useState('');
@@ -54,18 +42,14 @@ export default function CaesScreen() {
     setFeedback('');
   }
 
-  function adicionarCao() {
+  function handleAdicionarCao() {
     if (!nome.trim() || nomeExiste) return;
 
-    setCaes((prev) => [
-      ...prev,
-      {
-        id: Date.now().toString(),
-        nome: nome.trim().toUpperCase(),
-        tutor,
-        endereco,
-      },
-    ]);
+    adicionarCao({
+      nome: nome.trim().toUpperCase(),
+      tutor,
+      endereco,
+    });
 
     setFeedback('🐾 Cão adicionado');
     limparFormulario();
@@ -74,17 +58,10 @@ export default function CaesScreen() {
   function salvarEdicao() {
     if (!caoSelecionado) return;
 
-    setCaes((prev) =>
-      prev.map((c) =>
-        c.id === caoSelecionado.id
-          ? {
-              ...c,
-              tutor,
-              endereco,
-            }
-          : c
-      )
-    );
+    atualizarCao(caoSelecionado.id, {
+      tutor,
+      endereco,
+    });
 
     setFeedback('💾 Alterações salvas');
     limparFormulario();
@@ -145,7 +122,7 @@ export default function CaesScreen() {
                 styles.primaryBtn,
                 (!nome.trim() || nomeExiste) && styles.disabled,
               ]}
-              onPress={adicionarCao}
+              onPress={handleAdicionarCao}
               disabled={!nome.trim() || nomeExiste}
             >
               <Text style={styles.btnText}>ADICIONAR</Text>
